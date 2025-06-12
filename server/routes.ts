@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertLoanApplicationSchema, insertAgentSchema, insertContactMessageSchema, insertCibilRequestSchema } from "@shared/schema";
@@ -7,7 +7,7 @@ import { body, param, query, validationResult } from "express-validator";
 import { authenticateAgent, generateToken, comparePassword, type AuthenticatedRequest } from "./auth";
 
 // Validation middleware helper
-const handleValidationErrors = (req: Express.Request, res: Express.Response, next: Express.NextFunction) => {
+const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -72,14 +72,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/loan-applications/:applicationId/status", async (req, res) => {
+  app.patch("/api/loan-applications/:applicationId/status", [
+    authenticateAgent,
+    param('applicationId').isAlphanumeric().isLength({ min: 8, max: 20 }).withMessage('Invalid application ID'),
+    body('status').isIn(['pending', 'under-review', 'approved', 'rejected', 'disbursed']).withMessage('Invalid status'),
+    handleValidationErrors
+  ], async (req: AuthenticatedRequest, res) => {
     try {
       const { applicationId } = req.params;
       const { status } = req.body;
-
-      if (!status) {
-        return res.status(400).json({ message: "Status is required" });
-      }
 
       const application = await storage.updateLoanApplicationStatus(applicationId, status);
 
@@ -89,22 +90,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(application);
     } catch (error) {
+      console.error("Update status error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
   // Agent Routes
-  app.post("/api/agents/login", async (req, res) => {
+  app.post("/api/agents/login", [
+    body('email').isEmail().normalizeEmail().withMessage('Invalid email address'),
+    body('password').isLength({ min: 6, max: 100 }).withMessage('Password must be 6-100 characters'),
+    handleValidationErrors
+  ], async (req, res) => {
     try {
       const { email, password } = req.body;
 
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required" });
-      }
-
       const agent = await storage.getAgentByEmail(email);
 
-      if (!agent || agent.password !== password) {
+      if (!agent) {
+        // Prevent timing attacks by always comparing even if user doesn't exist
+        await comparePassword(password, '$2b$12$dummy.hash.to.prevent.timing.attacks');
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValidPassword = await comparePassword(password, agent.password);
+      
+      if (!isValidPassword) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
@@ -112,9 +122,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Agent account is inactive" });
       }
 
-      // In a real app, you'd set up proper session management here
+      // Generate JWT token
+      const token = generateToken({
+        id: agent.id,
+        email: agent.email,
+        name: agent.name
+      });
+
       res.json({ 
-        success: true, 
+        success: true,
+        token,
         agent: { 
           id: agent.id, 
           email: agent.email, 
@@ -122,22 +139,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } 
       });
     } catch (error) {
+      console.error("Agent login error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  app.get("/api/agents/applications", async (req, res) => {
+  app.get("/api/agents/applications", authenticateAgent, async (req: AuthenticatedRequest, res) => {
     try {
-      // In a real app, you'd verify agent authentication here
       const applications = await storage.getAllLoanApplications();
       res.json(applications);
     } catch (error) {
+      console.error("Get applications error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
   // Contact Routes
-  app.post("/api/contact", async (req, res) => {
+  app.post("/api/contact", [
+    body('name').isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
+    body('email').isEmail().normalizeEmail().withMessage('Invalid email address'),
+    body('mobile').matches(/^\+91[6-9]\d{4}-\d{5}$/).withMessage('Invalid mobile number format'),
+    body('subject').isLength({ min: 5, max: 200 }).withMessage('Subject must be 5-200 characters'),
+    body('message').isLength({ min: 10, max: 1000 }).withMessage('Message must be 10-1000 characters'),
+    handleValidationErrors
+  ], async (req, res) => {
     try {
       const validatedData = insertContactMessageSchema.parse(req.body);
       const message = await storage.createContactMessage(validatedData);
@@ -146,13 +171,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Validation error", errors: error.errors });
       } else {
+        console.error("Contact message error:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     }
   });
 
   // CIBIL Score Routes
-  app.post("/api/cibil-check", async (req, res) => {
+  app.post("/api/cibil-check", [
+    body('fullName').isLength({ min: 2, max: 100 }).withMessage('Full name must be 2-100 characters'),
+    body('mobile').matches(/^\+91[6-9]\d{4}-\d{5}$/).withMessage('Invalid mobile number format'),
+    body('panCard').matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/).withMessage('Invalid PAN card format'),
+    body('dateOfBirth').isISO8601().withMessage('Invalid date format'),
+    handleValidationErrors
+  ], async (req, res) => {
     try {
       const validatedData = insertCibilRequestSchema.parse(req.body);
       const cibilRequest = await storage.createCibilRequest(validatedData);
@@ -166,12 +198,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Validation error", errors: error.errors });
       } else {
+        console.error("CIBIL check error:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     }
   });
 
-  app.get("/api/cibil-check/:requestId", async (req, res) => {
+  app.get("/api/cibil-check/:requestId", [
+    param('requestId').isAlphanumeric().isLength({ min: 8, max: 20 }).withMessage('Invalid request ID'),
+    handleValidationErrors
+  ], async (req, res) => {
     try {
       const { requestId } = req.params;
       const cibilRequest = await storage.getCibilRequestById(requestId);
@@ -182,6 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(cibilRequest);
     } catch (error) {
+      console.error("Get CIBIL request error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

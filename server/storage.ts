@@ -162,13 +162,6 @@ export class MemStorage implements IStorage {
     this.currentAgentId = 1;
     this.currentMessageId = 1;
     this.currentCibilId = 1;
-    
-    // Add a default agent
-    this.createAgent({
-      email: "agent@finflow.com",
-      password: "admin123",
-      name: "Default Agent"
-    });
   }
 
   async getUser(id: number): Promise<User | undefined> {
