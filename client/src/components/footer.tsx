@@ -1,3 +1,5 @@
+import { Link } from "wouter";
+
 export default function Footer() {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -92,11 +94,10 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-lg mb-4">Legal</h4>
             <ul className="space-y-2 text-blue-100">
-              <li><a href="#" className="hover:text-white transition-colors duration-200">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors duration-200">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white transition-colors duration-200">Cookie Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors duration-200">Disclaimer</a></li>
-              <li><a href="#" className="hover:text-white transition-colors duration-200">NBFC License</a></li>
+              <li><Link href="/privacy-policy" className="hover:text-white transition-colors duration-200">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" className="hover:text-white transition-colors duration-200">Terms of Service</Link></li>
+              <li><Link href="/disclaimer" className="hover:text-white transition-colors duration-200">Legal Disclaimer</Link></li>
+              <li><Link href="/nbfc-license" className="hover:text-white transition-colors duration-200">NBFC License</Link></li>
             </ul>
           </div>
         </div>
