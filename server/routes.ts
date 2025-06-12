@@ -3,10 +3,36 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertLoanApplicationSchema, insertAgentSchema, insertContactMessageSchema, insertCibilRequestSchema } from "@shared/schema";
 import { z } from "zod";
+import { body, param, query, validationResult } from "express-validator";
+import { authenticateAgent, generateToken, comparePassword, type AuthenticatedRequest } from "./auth";
+
+// Validation middleware helper
+const handleValidationErrors = (req: Express.Request, res: Express.Response, next: Express.NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      message: "Validation error",
+      errors: errors.array()
+    });
+  }
+  next();
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Loan Application Routes
-  app.post("/api/loan-applications", async (req, res) => {
+  app.post("/api/loan-applications", [
+    body('fullName').isLength({ min: 2, max: 100 }).withMessage('Full name must be 2-100 characters'),
+    body('mobile').matches(/^\+91[6-9]\d{4}-\d{5}$/).withMessage('Invalid mobile number format'),
+    body('email').isEmail().normalizeEmail().withMessage('Invalid email address'),
+    body('panCard').matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/).withMessage('Invalid PAN card format'),
+    body('dateOfBirth').isISO8601().withMessage('Invalid date format'),
+    body('loanType').isIn(['personal', 'home', 'business', 'professional', 'loan-against-property', 'gold', 'car', 'overdraft', 'balance-transfer']).withMessage('Invalid loan type'),
+    body('loanAmount').isNumeric().isFloat({ min: 10000, max: 10000000 }).withMessage('Loan amount must be between ₹10,000 and ₹1,00,00,000'),
+    body('tenure').isInt({ min: 1, max: 30 }).withMessage('Tenure must be between 1-30 years'),
+    body('monthlyIncome').isNumeric().isFloat({ min: 15000 }).withMessage('Monthly income must be at least ₹15,000'),
+    body('employmentType').isIn(['salaried', 'self-employed', 'business', 'retired', 'unemployed']).withMessage('Invalid employment type'),
+    handleValidationErrors
+  ], async (req, res) => {
     try {
       const validatedData = insertLoanApplicationSchema.parse(req.body);
       const application = await storage.createLoanApplication(validatedData);
@@ -15,19 +41,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Validation error", errors: error.errors });
       } else {
+        console.error("Loan application error:", error);
         res.status(500).json({ message: "Internal server error" });
       }
     }
   });
 
-  app.get("/api/loan-applications/:applicationId", async (req, res) => {
+  app.get("/api/loan-applications/:applicationId", [
+    param('applicationId').isAlphanumeric().isLength({ min: 8, max: 20 }).withMessage('Invalid application ID'),
+    query('mobile').matches(/^\+91[6-9]\d{4}-\d{5}$/).withMessage('Invalid mobile number format'),
+    handleValidationErrors
+  ], async (req, res) => {
     try {
       const { applicationId } = req.params;
       const { mobile } = req.query;
-
-      if (!mobile) {
-        return res.status(400).json({ message: "Mobile number is required" });
-      }
 
       const application = await storage.getLoanApplicationByIdAndMobile(
         applicationId,
@@ -40,6 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(application);
     } catch (error) {
+      console.error("Get loan application error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
