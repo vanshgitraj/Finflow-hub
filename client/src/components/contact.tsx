@@ -100,8 +100,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900">WhatsApp Support</h4>
-                      <a href="https://wa.me/919876543210" className="text-finflow-primary hover:text-blue-800 transition-colors duration-200">
-                        +91 98765 43210
+                      <a href="https://wa.me/917800817764" className="text-finflow-primary hover:text-blue-800 transition-colors duration-200">
+                        +91 78008 17764
                       </a>
                     </div>
                   </div>
@@ -124,8 +124,8 @@ export default function Contact() {
                     </div>
                     <div>
                       <h4 className="font-medium text-gray-900">Phone Support</h4>
-                      <a href="tel:+919876543210" className="text-finflow-primary hover:text-blue-800 transition-colors duration-200">
-                        +91 98765 43210
+                      <a href="tel:+917800817764" className="text-finflow-primary hover:text-blue-800 transition-colors duration-200">
+                        +91 78008 17764
                       </a>
                     </div>
                   </div>

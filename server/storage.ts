@@ -70,6 +70,7 @@ export class MemStorage implements IStorage {
       status: "submitted",
       submittedAt: now,
       lastUpdated: now,
+      existingEmis: application.existingEmis ?? 0,
     };
     this.loanApplications.set(applicationId, loanApplication);
     return loanApplication;
@@ -121,6 +122,7 @@ export class MemStorage implements IStorage {
       ...insertMessage,
       id,
       createdAt: new Date(),
+      phone: insertMessage.phone ?? null,
     };
     this.contactMessages.set(id, message);
     return message;

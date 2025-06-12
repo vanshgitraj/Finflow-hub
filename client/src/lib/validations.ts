@@ -10,9 +10,9 @@ export function formatMobileNumber(value: string): string {
   // Limit to 10 digits
   cleaned = cleaned.substring(0, 10);
   
-  // Format as XXXXX-XXXXX
+  // Format as XXXXX XXXXX (Indian mobile format)
   if (cleaned.length >= 6) {
-    return cleaned.substring(0, 5) + '-' + cleaned.substring(5);
+    return cleaned.substring(0, 5) + ' ' + cleaned.substring(5);
   } else if (cleaned.length > 0) {
     return cleaned;
   }

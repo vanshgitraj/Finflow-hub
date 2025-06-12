@@ -429,8 +429,12 @@ export default function LoanApplication() {
                           <SelectItem value="personal">Personal Loan</SelectItem>
                           <SelectItem value="home">Home Loan</SelectItem>
                           <SelectItem value="business">Business Loan</SelectItem>
-                          <SelectItem value="education">Education Loan</SelectItem>
-                          <SelectItem value="vehicle">Vehicle Loan</SelectItem>
+                          <SelectItem value="overdraft">Overdraft Facility</SelectItem>
+                          <SelectItem value="professional">Professional Loan</SelectItem>
+                          <SelectItem value="loan-against-property">Loan Against Property</SelectItem>
+                          <SelectItem value="gold">Gold Loan</SelectItem>
+                          <SelectItem value="car">Car Loan</SelectItem>
+                          <SelectItem value="balance-transfer">Balance Transfer</SelectItem>
                         </SelectContent>
                       </Select>
                       {form.formState.errors.loanType && (

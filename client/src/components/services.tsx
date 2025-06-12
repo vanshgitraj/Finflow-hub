@@ -24,6 +24,42 @@ export default function Services() {
       title: "Business Loan",
       description: "Fuel your business growth with our flexible business loan options.",
       features: ["Up to ₹50 Lakhs", "Interest from 12.99%", "Tenure up to 7 years"]
+    },
+    {
+      icon: "fas fa-credit-card",
+      title: "Overdraft Facility",
+      description: "Flexible overdraft limits for your banking needs with instant access.",
+      features: ["Up to ₹10 Lakhs", "Interest from 12.50%", "No fixed tenure"]
+    },
+    {
+      icon: "fas fa-user-tie",
+      title: "Professional Loan",
+      description: "Specialized loans for doctors, CA, lawyers and other professionals.",
+      features: ["Up to ₹25 Lakhs", "Interest from 11.99%", "Tenure up to 7 years"]
+    },
+    {
+      icon: "fas fa-building",
+      title: "Loan Against Property",
+      description: "Unlock the value of your property with competitive loan rates.",
+      features: ["Up to ₹5 Crores", "Interest from 9.99%", "Tenure up to 20 years"]
+    },
+    {
+      icon: "fas fa-coins",
+      title: "Gold Loan",
+      description: "Instant loans against your gold jewelry with flexible repayment.",
+      features: ["Up to ₹1 Crore", "Interest from 9.50%", "Tenure up to 3 years"]
+    },
+    {
+      icon: "fas fa-car",
+      title: "Car Loan",
+      description: "Drive your dream car home with our attractive auto loan offers.",
+      features: ["Up to ₹50 Lakhs", "Interest from 8.99%", "Tenure up to 7 years"]
+    },
+    {
+      icon: "fas fa-exchange-alt",
+      title: "Balance Transfer",
+      description: "Transfer your existing loans to get better rates and save money.",
+      features: ["Save up to 2%", "Lower EMIs", "Flexible tenure"]
     }
   ];
 
@@ -37,7 +73,7 @@ export default function Services() {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           {services.map((service, index) => (
             <div key={index} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 border border-gray-100">
               <div className="bg-finflow-primary bg-opacity-10 rounded-full w-16 h-16 flex items-center justify-center mb-6">
