@@ -12,29 +12,69 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { validatePAN, formatMobileNumber } from "@/lib/validations";
+import { validatePAN, formatMobileNumber, sanitizeInput, validateName, validateEmail, validateMobileNumber, validateLoanAmount, validateTenure, validateIncome, validateAge } from "@/lib/validations";
 
 const loanApplicationSchema = z.object({
   // Personal Information
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
-  mobile: z.string().regex(/^\d{10}$/, "Mobile number must be 10 digits"),
-  email: z.string().email("Invalid email address"),
-  panCard: z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format (ABCDE1234F)"),
-  gender: z.string().min(1, "Gender is required"),
-  currentAddress: z.string().min(10, "Address must be at least 10 characters"),
+  fullName: z.string()
+    .min(2, "Full name must be at least 2 characters")
+    .max(100, "Full name must not exceed 100 characters")
+    .regex(/^[a-zA-Z\s.]+$/, "Name can only contain letters, spaces, and dots")
+    .transform(sanitizeInput),
+  dateOfBirth: z.string()
+    .min(1, "Date of birth is required")
+    .refine((date) => {
+      const parsed = new Date(date);
+      return validateAge(parsed);
+    }, "Age must be between 18 and 70 years"),
+  mobile: z.string()
+    .regex(/^[6-9]\d{9}$/, "Mobile number must start with 6-9 and be 10 digits")
+    .refine(validateMobileNumber, "Invalid mobile number format"),
+  email: z.string()
+    .email("Invalid email address")
+    .max(255, "Email too long")
+    .refine(validateEmail, "Invalid email format")
+    .transform((email) => email.toLowerCase()),
+  panCard: z.string()
+    .regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN format (ABCDE1234F)")
+    .refine(validatePAN, "Invalid PAN card number")
+    .transform((pan) => pan.toUpperCase()),
+  gender: z.enum(["male", "female", "other"], { required_error: "Gender is required" }),
+  currentAddress: z.string()
+    .min(10, "Address must be at least 10 characters")
+    .max(500, "Address too long")
+    .transform(sanitizeInput),
   // Employment & Financial Information
-  employmentType: z.string().min(1, "Employment type is required"),
-  monthlyIncome: z.number().min(10000, "Monthly income must be at least ₹10,000"),
-  companyName: z.string().min(2, "Company name is required"),
-  workExperience: z.string().min(1, "Work experience is required"),
-  existingEmis: z.number().min(0, "EMI amount cannot be negative"),
-  accountType: z.string().min(1, "Account type is required"),
+  employmentType: z.enum(["salaried", "self-employed", "business", "retired"], { required_error: "Employment type is required" }),
+  monthlyIncome: z.number()
+    .min(15000, "Monthly income must be at least ₹15,000")
+    .max(50000000, "Income amount too high")
+    .refine(validateIncome, "Invalid income amount"),
+  companyName: z.string()
+    .min(2, "Company name is required")
+    .max(200, "Company name too long")
+    .transform(sanitizeInput),
+  workExperience: z.string()
+    .min(1, "Work experience is required")
+    .max(50, "Work experience too long"),
+  existingEmis: z.number()
+    .min(0, "EMI amount cannot be negative")
+    .max(1000000, "EMI amount too high"),
+  accountType: z.enum(["savings", "current", "salary"], { required_error: "Account type is required" }),
   // Loan Details
-  loanType: z.string().min(1, "Loan type is required"),
-  loanAmount: z.number().min(50000, "Loan amount must be at least ₹50,000").max(5000000, "Loan amount cannot exceed ₹50,00,000"),
-  tenure: z.number().min(1, "Tenure is required"),
-  purpose: z.string().min(1, "Purpose is required"),
+  loanType: z.enum(["personal", "home", "business", "professional", "loan-against-property", "gold", "car", "overdraft", "balance-transfer"], { required_error: "Loan type is required" }),
+  loanAmount: z.number()
+    .min(10000, "Loan amount must be at least ₹10,000")
+    .max(10000000, "Loan amount cannot exceed ₹1,00,00,000")
+    .refine(validateLoanAmount, "Invalid loan amount"),
+  tenure: z.number()
+    .min(1, "Tenure must be at least 1 year")
+    .max(30, "Tenure cannot exceed 30 years")
+    .refine(validateTenure, "Invalid tenure"),
+  purpose: z.string()
+    .min(5, "Purpose must be at least 5 characters")
+    .max(200, "Purpose too long")
+    .transform(sanitizeInput),
   termsAccepted: z.boolean().refine(val => val === true, "You must accept terms and conditions")
 });
 
