@@ -56,6 +56,19 @@ export const contactMessages = pgTable("contact_messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const cibilRequests = pgTable("cibil_requests", {
+  id: serial("id").primaryKey(),
+  requestId: text("request_id").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  dateOfBirth: text("date_of_birth").notNull(),
+  mobile: text("mobile").notNull(),
+  panCard: text("pan_card").notNull(),
+  pincode: text("pincode").notNull(),
+  score: integer("score"),
+  status: text("status").default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -78,6 +91,14 @@ export const insertContactMessageSchema = createInsertSchema(contactMessages).om
   createdAt: true,
 });
 
+export const insertCibilRequestSchema = createInsertSchema(cibilRequests).omit({
+  id: true,
+  requestId: true,
+  score: true,
+  status: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoanApplication = typeof loanApplications.$inferSelect;
@@ -86,3 +107,5 @@ export type Agent = typeof agents.$inferSelect;
 export type InsertAgent = z.infer<typeof insertAgentSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+export type CibilRequest = typeof cibilRequests.$inferSelect;
+export type InsertCibilRequest = z.infer<typeof insertCibilRequestSchema>;

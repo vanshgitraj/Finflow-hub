@@ -3,6 +3,7 @@ import Hero from "@/components/hero";
 import Services from "@/components/services";
 import LoanApplication from "@/components/loan-application";
 import TrackApplication from "@/components/track-application";
+import CibilScore from "@/components/cibil-score";
 import Contact from "@/components/contact";
 import Footer from "@/components/footer";
 import AgentLoginModal from "@/components/agent-login-modal";
@@ -18,6 +19,7 @@ export default function Home() {
       <Services />
       <LoanApplication />
       <TrackApplication />
+      <CibilScore />
       <Contact />
       <Footer />
       <AgentLoginModal 

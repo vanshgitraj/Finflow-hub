@@ -65,6 +65,12 @@ export default function Header({ onAgentLoginClick }: HeaderProps) {
               Track
             </button>
             <button 
+              onClick={() => scrollToSection('cibil')}
+              className="text-gray-600 hover:text-finflow-primary transition-colors duration-200 font-medium"
+            >
+              CIBIL Score
+            </button>
+            <button 
               onClick={() => scrollToSection('contact')}
               className="text-gray-600 hover:text-finflow-primary transition-colors duration-200 font-medium"
             >
@@ -124,6 +130,12 @@ export default function Header({ onAgentLoginClick }: HeaderProps) {
               className="block text-gray-600 hover:text-finflow-primary font-medium w-full text-left"
             >
               Track
+            </button>
+            <button 
+              onClick={() => scrollToSection('cibil')}
+              className="block text-gray-600 hover:text-finflow-primary font-medium w-full text-left"
+            >
+              CIBIL Score
             </button>
             <button 
               onClick={() => scrollToSection('contact')}

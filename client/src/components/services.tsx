@@ -60,6 +60,12 @@ export default function Services() {
       title: "Balance Transfer",
       description: "Transfer your existing loans to get better rates and save money.",
       features: ["Save up to 2%", "Lower EMIs", "Flexible tenure"]
+    },
+    {
+      icon: "fas fa-chart-bar",
+      title: "CIBIL Score Check",
+      description: "Check your credit score instantly and download your CIBIL report.",
+      features: ["Free Credit Score", "Detailed Report", "Powered by CIBIL"]
     }
   ];
 
