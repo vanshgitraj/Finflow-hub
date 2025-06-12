@@ -96,10 +96,10 @@ export default function Services() {
                 ))}
               </ul>
               <button 
-                onClick={() => scrollToSection('apply')}
+                onClick={() => scrollToSection(service.title === "CIBIL Score Check" ? 'cibil' : 'apply')}
                 className="text-finflow-primary font-semibold hover:text-blue-800 transition-colors duration-200"
               >
-                Apply Now <i className="fas fa-arrow-right ml-1"></i>
+                {service.title === "CIBIL Score Check" ? "Check Score" : "Apply Now"} <i className="fas fa-arrow-right ml-1"></i>
               </button>
             </div>
           ))}

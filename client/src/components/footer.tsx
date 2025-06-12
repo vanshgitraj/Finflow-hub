@@ -72,6 +72,14 @@ export default function Footer() {
               </li>
               <li>
                 <button 
+                  onClick={() => scrollToSection('cibil')}
+                  className="hover:text-white transition-colors duration-200"
+                >
+                  CIBIL Score Check
+                </button>
+              </li>
+              <li>
+                <button 
                   onClick={() => scrollToSection('contact')}
                   className="hover:text-white transition-colors duration-200"
                 >

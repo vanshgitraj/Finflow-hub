@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertLoanApplicationSchema, insertAgentSchema, insertContactMessageSchema } from "@shared/schema";
+import { insertLoanApplicationSchema, insertAgentSchema, insertContactMessageSchema, insertCibilRequestSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -120,6 +120,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Internal server error" });
       }
+    }
+  });
+
+  // CIBIL Score Routes
+  app.post("/api/cibil-check", async (req, res) => {
+    try {
+      const validatedData = insertCibilRequestSchema.parse(req.body);
+      const cibilRequest = await storage.createCibilRequest(validatedData);
+      res.json({ 
+        success: true, 
+        requestId: cibilRequest.requestId,
+        score: cibilRequest.score,
+        status: cibilRequest.status 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Validation error", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/cibil-check/:requestId", async (req, res) => {
+    try {
+      const { requestId } = req.params;
+      const cibilRequest = await storage.getCibilRequestById(requestId);
+
+      if (!cibilRequest) {
+        return res.status(404).json({ message: "CIBIL request not found" });
+      }
+
+      res.json(cibilRequest);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 

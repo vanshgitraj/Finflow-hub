@@ -1,4 +1,4 @@
-import { users, loanApplications, agents, contactMessages, type User, type InsertUser, type LoanApplication, type InsertLoanApplication, type Agent, type InsertAgent, type ContactMessage, type InsertContactMessage } from "@shared/schema";
+import { users, loanApplications, agents, contactMessages, cibilRequests, type User, type InsertUser, type LoanApplication, type InsertLoanApplication, type Agent, type InsertAgent, type ContactMessage, type InsertContactMessage, type CibilRequest, type InsertCibilRequest } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -15,6 +15,9 @@ export interface IStorage {
   createAgent(agent: InsertAgent): Promise<Agent>;
   
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+  
+  createCibilRequest(request: InsertCibilRequest): Promise<CibilRequest>;
+  getCibilRequestById(requestId: string): Promise<CibilRequest | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -22,18 +25,22 @@ export class MemStorage implements IStorage {
   private loanApplications: Map<string, LoanApplication>;
   private agents: Map<string, Agent>;
   private contactMessages: Map<number, ContactMessage>;
+  private cibilRequests: Map<string, CibilRequest>;
   private currentUserId: number;
   private currentAgentId: number;
   private currentMessageId: number;
+  private currentCibilId: number;
 
   constructor() {
     this.users = new Map();
     this.loanApplications = new Map();
     this.agents = new Map();
     this.contactMessages = new Map();
+    this.cibilRequests = new Map();
     this.currentUserId = 1;
     this.currentAgentId = 1;
     this.currentMessageId = 1;
+    this.currentCibilId = 1;
     
     // Add a default agent
     this.createAgent({
@@ -130,6 +137,46 @@ export class MemStorage implements IStorage {
     };
     this.contactMessages.set(id, message);
     return message;
+  }
+
+  async createCibilRequest(insertRequest: InsertCibilRequest): Promise<CibilRequest> {
+    const requestId = `CB2025${Math.random().toString().substr(2, 8)}`;
+    const id = this.currentCibilId++;
+    
+    // Generate a mock CIBIL score based on PAN card (for demo purposes)
+    const score = this.generateMockCibilScore(insertRequest.panCard);
+    
+    const cibilRequest: CibilRequest = {
+      id,
+      requestId,
+      fullName: insertRequest.fullName,
+      dateOfBirth: insertRequest.dateOfBirth,
+      mobile: insertRequest.mobile,
+      panCard: insertRequest.panCard,
+      pincode: insertRequest.pincode,
+      score,
+      status: "completed",
+      createdAt: new Date(),
+    };
+    
+    this.cibilRequests.set(requestId, cibilRequest);
+    return cibilRequest;
+  }
+
+  async getCibilRequestById(requestId: string): Promise<CibilRequest | undefined> {
+    return this.cibilRequests.get(requestId);
+  }
+
+  private generateMockCibilScore(panCard: string): number {
+    // Generate a realistic CIBIL score based on PAN card hash (for demo)
+    const hash = panCard.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const baseScore = 300 + (hash % 600); // Range: 300-900
+    
+    // Adjust to make it more realistic (most people have scores between 650-800)
+    if (baseScore < 550) return 550 + (hash % 100);
+    if (baseScore > 850) return 750 + (hash % 100);
+    
+    return baseScore;
   }
 }
 
