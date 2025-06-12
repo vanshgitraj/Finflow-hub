@@ -1,4 +1,6 @@
 import { users, loanApplications, agents, contactMessages, cibilRequests, type User, type InsertUser, type LoanApplication, type InsertLoanApplication, type Agent, type InsertAgent, type ContactMessage, type InsertContactMessage, type CibilRequest, type InsertCibilRequest } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -18,6 +20,125 @@ export interface IStorage {
   
   createCibilRequest(request: InsertCibilRequest): Promise<CibilRequest>;
   getCibilRequestById(requestId: string): Promise<CibilRequest | undefined>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async createLoanApplication(application: InsertLoanApplication): Promise<LoanApplication> {
+    const applicationId = `LN2025${Math.random().toString().substr(2, 6)}`;
+    const [loanApplication] = await db
+      .insert(loanApplications)
+      .values({
+        ...application,
+        applicationId,
+        status: "submitted",
+      })
+      .returning();
+    return loanApplication;
+  }
+
+  async getLoanApplicationById(applicationId: string): Promise<LoanApplication | undefined> {
+    const [application] = await db
+      .select()
+      .from(loanApplications)
+      .where(eq(loanApplications.applicationId, applicationId));
+    return application || undefined;
+  }
+
+  async getLoanApplicationByIdAndMobile(applicationId: string, mobile: string): Promise<LoanApplication | undefined> {
+    const applications = await db
+      .select()
+      .from(loanApplications)
+      .where(eq(loanApplications.applicationId, applicationId));
+    
+    const application = applications.find(app => app.mobile === mobile);
+    return application || undefined;
+  }
+
+  async updateLoanApplicationStatus(applicationId: string, status: string): Promise<LoanApplication | undefined> {
+    const [application] = await db
+      .update(loanApplications)
+      .set({ status, lastUpdated: new Date() })
+      .where(eq(loanApplications.applicationId, applicationId))
+      .returning();
+    return application || undefined;
+  }
+
+  async getAllLoanApplications(): Promise<LoanApplication[]> {
+    return await db.select().from(loanApplications);
+  }
+
+  async getAgentByEmail(email: string): Promise<Agent | undefined> {
+    const [agent] = await db.select().from(agents).where(eq(agents.email, email));
+    return agent || undefined;
+  }
+
+  async createAgent(insertAgent: InsertAgent): Promise<Agent> {
+    const [agent] = await db
+      .insert(agents)
+      .values({ ...insertAgent, isActive: true })
+      .returning();
+    return agent;
+  }
+
+  async createContactMessage(insertMessage: InsertContactMessage): Promise<ContactMessage> {
+    const [message] = await db
+      .insert(contactMessages)
+      .values(insertMessage)
+      .returning();
+    return message;
+  }
+
+  async createCibilRequest(insertRequest: InsertCibilRequest): Promise<CibilRequest> {
+    const requestId = `CB2025${Math.random().toString().substr(2, 8)}`;
+    const score = this.generateMockCibilScore(insertRequest.panCard);
+    
+    const [cibilRequest] = await db
+      .insert(cibilRequests)
+      .values({
+        ...insertRequest,
+        requestId,
+        score,
+        status: "completed",
+      })
+      .returning();
+    return cibilRequest;
+  }
+
+  async getCibilRequestById(requestId: string): Promise<CibilRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(cibilRequests)
+      .where(eq(cibilRequests.requestId, requestId));
+    return request || undefined;
+  }
+
+  private generateMockCibilScore(panCard: string): number {
+    const hash = panCard.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const baseScore = 300 + (hash % 600);
+    
+    if (baseScore < 550) return 550 + (hash % 100);
+    if (baseScore > 850) return 750 + (hash % 100);
+    
+    return baseScore;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -180,4 +301,18 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Initialize database storage and create default agent
+const databaseStorage = new DatabaseStorage();
+
+// Create default agent on startup
+databaseStorage.getAgentByEmail("agent@finflow.com").then(async (existingAgent) => {
+  if (!existingAgent) {
+    await databaseStorage.createAgent({
+      email: "agent@finflow.com",
+      password: "admin123",
+      name: "Default Agent"
+    });
+  }
+}).catch(console.error);
+
+export const storage = databaseStorage;
