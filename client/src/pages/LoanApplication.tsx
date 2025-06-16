@@ -2,21 +2,27 @@
 
 import React, { useState } from 'react'; import axios from 'axios';
 
-const LoanApplication = () => { const [formData, setFormData] = useState({ loanType: '', amount: '', tenure: '', purpose: '' });
+const LoanApplication = () => { const [formData, setFormData] = useState({ fullName: '', mobile: '', email: '', loanType: '', loanAmount: '', tenure: '', purpose: '' });
 
 const [message, setMessage] = useState('');
 
 const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
 
-const handleSubmit = async (e: React.FormEvent) => { e.preventDefault(); try { console.log("Submitting form:", formData);
+const handleSubmit = async (e: React.FormEvent) => { e.preventDefault();
+
+const payload = {
+  fullName: formData.fullName,
+  mobile: formData.mobile,
+  email: formData.email,
+  loanType: formData.loanType,
+  loanAmount: Number(formData.loanAmount),
+  tenure: Number(formData.tenure),
+  purpose: formData.purpose
+};
 
 console.log("Sending to API:", payload);
 
-const payload = {
-    ...formData,
-    amount: Number(formData.amount) // ensure it's a number
-  };
-
+try {
   const res = await axios.post('/api/loan-applications', payload);
 
   if (res.status === 200) {
@@ -31,21 +37,57 @@ const payload = {
 
 };
 
-return ( <div className="max-w-md mx-auto mt-10 p-4 border rounded shadow"> <h2 className="text-xl font-bold mb-4">Loan Application Form</h2> <form onSubmit={handleSubmit} className="space-y-4"> <div> <label className="block">Loan Type</label> <input
+return ( <div className="max-w-md mx-auto mt-10 p-4 border rounded shadow"> <h2 className="text-xl font-bold mb-4">Loan Application Form</h2> <form onSubmit={handleSubmit} className="space-y-4"> <div> <label className="block">Full Name</label> <input
 type="text"
-name="loanType"
-value={formData.loanType}
+name="fullName"
+value={formData.fullName}
 onChange={handleChange}
 required
 className="w-full border p-2"
 /> </div>
 
 <div>
-      <label className="block">Amount</label>
+      <label className="block">Mobile</label>
+      <input
+        type="text"
+        name="mobile"
+        value={formData.mobile}
+        onChange={handleChange}
+        required
+        className="w-full border p-2"
+      />
+    </div>
+
+    <div>
+      <label className="block">Email</label>
+      <input
+        type="email"
+        name="email"
+        value={formData.email}
+        onChange={handleChange}
+        required
+        className="w-full border p-2"
+      />
+    </div>
+
+    <div>
+      <label className="block">Loan Type</label>
+      <input
+        type="text"
+        name="loanType"
+        value={formData.loanType}
+        onChange={handleChange}
+        required
+        className="w-full border p-2"
+      />
+    </div>
+
+    <div>
+      <label className="block">Loan Amount</label>
       <input
         type="number"
-        name="amount"
-        value={formData.amount}
+        name="loanAmount"
+        value={formData.loanAmount}
         onChange={handleChange}
         required
         className="w-full border p-2"
@@ -55,7 +97,7 @@ className="w-full border p-2"
     <div>
       <label className="block">Tenure</label>
       <input
-        type="text"
+        type="number"
         name="tenure"
         value={formData.tenure}
         onChange={handleChange}
