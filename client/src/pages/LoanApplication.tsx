@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'; import axios from 'axios';
 
-const LoanApplication = () => { const [formData, setFormData] = useState({ fullName: '', mobile: '', email: '', loanType: '', loanAmount: '', tenure: '', purpose: '' });
+const LoanApplication = () => { const [formData, setFormData] = useState({ fullName: '', mobile: '', email: '', panCard: '', dateOfBirth: '', gender: '', currentAddress: '', employmentType: '', monthlyIncome: '', companyName: '', workExperience: '', existingEmis: '', accountType: '', loanType: '', loanAmount: '', tenure: '', purpose: '' });
 
 const [message, setMessage] = useState('');
 
@@ -11,13 +11,11 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 const handleSubmit = async (e: React.FormEvent) => { e.preventDefault();
 
 const payload = {
-  fullName: formData.fullName,
-  mobile: formData.mobile,
-  email: formData.email,
-  loanType: formData.loanType,
+  ...formData,
   loanAmount: Number(formData.loanAmount),
   tenure: Number(formData.tenure),
-  purpose: formData.purpose
+  monthlyIncome: Number(formData.monthlyIncome),
+  existingEmis: Number(formData.existingEmis)
 };
 
 console.log("Sending to API:", payload);
@@ -37,91 +35,9 @@ try {
 
 };
 
-return ( <div className="max-w-md mx-auto mt-10 p-4 border rounded shadow"> <h2 className="text-xl font-bold mb-4">Loan Application Form</h2> <form onSubmit={handleSubmit} className="space-y-4"> <div> <label className="block">Full Name</label> <input
-type="text"
-name="fullName"
-value={formData.fullName}
-onChange={handleChange}
-required
-className="w-full border p-2"
-/> </div>
+return ( <div className="max-w-md mx-auto mt-10 p-4 border rounded shadow"> <h2 className="text-xl font-bold mb-4">Loan Application Form</h2> <form onSubmit={handleSubmit} className="space-y-4"> <input name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} required className="w-full border p-2" /> <input name="mobile" placeholder="Mobile" value={formData.mobile} onChange={handleChange} required className="w-full border p-2" /> <input name="email" placeholder="Email" type="email" value={formData.email} onChange={handleChange} required className="w-full border p-2" /> <input name="panCard" placeholder="PAN Card" value={formData.panCard} onChange={handleChange} required className="w-full border p-2" /> <input name="dateOfBirth" type="date" placeholder="DOB" value={formData.dateOfBirth} onChange={handleChange} required className="w-full border p-2" /> <select name="gender" value={formData.gender} onChange={handleChange} required className="w-full border p-2"> <option value="">Select Gender</option> <option value="male">Male</option> <option value="female">Female</option> <option value="other">Other</option> </select> <input name="currentAddress" placeholder="Current Address" value={formData.currentAddress} onChange={handleChange} required className="w-full border p-2" /> <input name="employmentType" placeholder="Employment Type" value={formData.employmentType} onChange={handleChange} required className="w-full border p-2" /> <input name="monthlyIncome" type="number" placeholder="Monthly Income" value={formData.monthlyIncome} onChange={handleChange} required className="w-full border p-2" /> <input name="companyName" placeholder="Company Name" value={formData.companyName} onChange={handleChange} required className="w-full border p-2" /> <input name="workExperience" placeholder="Work Experience" value={formData.workExperience} onChange={handleChange} required className="w-full border p-2" /> <input name="existingEmis" type="number" placeholder="Existing EMIs" value={formData.existingEmis} onChange={handleChange} className="w-full border p-2" /> <input name="accountType" placeholder="Account Type" value={formData.accountType} onChange={handleChange} required className="w-full border p-2" /> <input name="loanType" placeholder="Loan Type" value={formData.loanType} onChange={handleChange} required className="w-full border p-2" /> <input name="loanAmount" type="number" placeholder="Loan Amount" value={formData.loanAmount} onChange={handleChange} required className="w-full border p-2" /> <input name="tenure" type="number" placeholder="Tenure (in years)" value={formData.tenure} onChange={handleChange} required className="w-full border p-2" /> <input name="purpose" placeholder="Purpose" value={formData.purpose} onChange={handleChange} required className="w-full border p-2" />
 
-<div>
-      <label className="block">Mobile</label>
-      <input
-        type="text"
-        name="mobile"
-        value={formData.mobile}
-        onChange={handleChange}
-        required
-        className="w-full border p-2"
-      />
-    </div>
-
-    <div>
-      <label className="block">Email</label>
-      <input
-        type="email"
-        name="email"
-        value={formData.email}
-        onChange={handleChange}
-        required
-        className="w-full border p-2"
-      />
-    </div>
-
-    <div>
-      <label className="block">Loan Type</label>
-      <input
-        type="text"
-        name="loanType"
-        value={formData.loanType}
-        onChange={handleChange}
-        required
-        className="w-full border p-2"
-      />
-    </div>
-
-    <div>
-      <label className="block">Loan Amount</label>
-      <input
-        type="number"
-        name="loanAmount"
-        value={formData.loanAmount}
-        onChange={handleChange}
-        required
-        className="w-full border p-2"
-      />
-    </div>
-
-    <div>
-      <label className="block">Tenure</label>
-      <input
-        type="number"
-        name="tenure"
-        value={formData.tenure}
-        onChange={handleChange}
-        required
-        className="w-full border p-2"
-      />
-    </div>
-
-    <div>
-      <label className="block">Purpose</label>
-      <input
-        type="text"
-        name="purpose"
-        value={formData.purpose}
-        onChange={handleChange}
-        required
-        className="w-full border p-2"
-      />
-    </div>
-
-    <button
-      type="submit"
-      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-    >
+<button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
       Submit
     </button>
 
