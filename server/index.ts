@@ -1,3 +1,4 @@
+
 import loanApplicationRoute from './routes/loanApplicationRoute';
 app.use(loanApplicationRoute);
 import express, { type Request, Response, NextFunction } from "express";
