@@ -7,6 +7,11 @@ import cors from "cors";
 
 const app = express();
 
+// ✅ ADD THIS LINE BEFORE anything else
+app.set('trust proxy', true);
+
+app.use(express.json());
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
