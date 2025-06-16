@@ -10,6 +10,8 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 
 const handleSubmit = async (e: React.FormEvent) => { e.preventDefault(); try { console.log("Submitting form:", formData);
 
+console.log("Sending to API:", payload);
+
 const payload = {
     ...formData,
     amount: Number(formData.amount) // ensure it's a number
