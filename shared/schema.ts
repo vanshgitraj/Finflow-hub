@@ -1,3 +1,9 @@
+export const insertLoanApplicationSchema = z.object({
+  loanType: z.string(),
+  amount: z.number(),
+  tenure: z.string(),
+  purpose: z.string(),
+});
 import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
