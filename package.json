@@ -1,6 +1,5 @@
 "dependencies": {
   "dotenv": "^16.4.5",
-  // yahan aur bhi ho sakte hai
 }
 {
   "name": "rest-express",
