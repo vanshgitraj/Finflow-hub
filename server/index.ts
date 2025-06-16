@@ -8,7 +8,7 @@ import cors from "cors";
 const app = express();
 
 // ✅ ADD THIS LINE BEFORE anything else
-app.set('trust proxy', true);
+app.set("trust proxy", 1);
 
 app.use(express.json());
 
